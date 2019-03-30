@@ -413,13 +413,10 @@ print("Number of recipients that received donations from HUMAN")
 length(which(unique(excluded$ID) %in% human$old_recipient_location_id))
 length(which(unique(incomplete$ID) %in% human$old_recipient_location_id))
 length(which(unique(inactive$ID) %in% human$old_recipient_location_id))
-human = human %>% filter(!old_recipient_location_id %in% excluded$ID & !old_recipient_location_id %in% incomplete$ID & !old_recipient_location_id %in% inactive$ID) 
 
-excluded = excluded %>% filter(ID %in% human$old_recipient_location_id)
-incomplete = incomplete %>% filter(ID %in% human$old_recipient_location_id)
-inactive = inactive %>% filter(ID %in% human$old_recipient_location_id)
-ids = data.frame(id = unique(c(excluded$ID, incomplete$ID, inactive$ID)))
-ids
+#excluded = excluded %>% filter(ID %in% human$old_recipient_location_id)
+#incomplete = incomplete %>% filter(ID %in% human$old_recipient_location_id)
+#inactive = inactive %>% filter(ID %in% human$old_recipient_location_id)
 #write.csv(ids, file = "unique_excluded_ids.csv")
 #write.csv(in_all, file = "all_excluded_recipients.csv")
 
@@ -427,6 +424,13 @@ print("Number of donations received by these recipients in HUMAN")
 nrow(human %>% slice(which(human$old_recipient_location_id %in% excluded$ID)))
 nrow(human %>% slice(which(human$old_recipient_location_id %in% incomplete$ID)))
 nrow(human %>% slice(which(human$old_recipient_location_id %in% inactive$ID)))
+
+invalid_donations = human %>% slice(which(human$old_recipient_location_id %in% excluded$ID | human$old_recipient_location_id %in% incomplete$ID | human$old_recipient_location_id %in% inactive$ID)) 
+human %>% slice(which(!human$rescue_id %in% invalid_donations$rescue_id))
+top.1 %>% slice(which(!top.1$rescue_id %in% invalid_donations$rescue_id))
+random %>% slice(which(!random$rescue_id %in% invalid_donations$rescue_id))
+distance %>% slice(which(!rescue_id %in% invalid_donations$rescue_id))
+top.10 %>% slice(which(!top.10$rescue_id %in% invalid_donations$rescue_id))
 ```
 
 ## R Markdown

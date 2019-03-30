@@ -59,9 +59,14 @@ random = random %>% rowwise() %>% mutate(day_of_week = weekdays(as.Date(donation
 excluded = partners %>% slice(which(partners$status == "Exclude" | partners$status == "exclude"))
 incomplete = partners %>% slice(which(partners$status == "Incomplete" | partners$status == "incomplete"))
 inactive = partners %>% slice(which(partners$status == "Inactive" | partners$status == "inactive"))
-partners = partners %>% slice(which(is.na(partners$status) == T | partners$status == "invalid hour"))
+invalid_donations = human %>% slice(which(human$old_recipient_location_id %in% excluded$ID | human$old_recipient_location_id %in% incomplete$ID | human$old_recipient_location_id %in% inactive$ID))
+human = human %>% slice(which(!rescue_id %in% invalid_donations$rescue_id))
+top.1 = top.1 %>% slice(which(!rescue_id %in% invalid_donations$rescue_id))
+random = random %>% slice(which(!rescue_id %in% invalid_donations$rescue_id))
+distance = distance %>% slice(which(!rescue_id %in% invalid_donations$rescue_id))
+top.10 = top.10 %>% slice(which(!rescue_id %in% invalid_donations$rescue_id))
 
-#human = human %>% filter(!old_recipient_location_id %in% excluded$ID & !old_recipient_location_id %in% incomplete$ID & !old_recipient_location_id %in% inactive$ID) 
+partners = partners %>% slice(which(is.na(partners$status) == T | partners$status == "invalid hour"))
 
 # Define functions
 
@@ -380,21 +385,21 @@ involved.random = get_involved_recipients(random)
 involved.top.1 = get_involved_recipients(top.1)
 involved.top.10 = get_involved_recipients(top.10)
 involved.human = get_involved_recipients(human, h = TRUE)
-density.involved = data.frame("number_of_rescues" = c(1:1835), "TopA" = involved.top.1, "TenA" = involved.top.10, "DA" = involved.distance, "RA" = involved.random, "HA" = involved.human)
+density.involved = data.frame("number_of_rescues" = c(1:1760), "TopA" = involved.top.1, "TenA" = involved.top.10, "DA" = involved.distance, "RA" = involved.random, "HA" = involved.human)
 
 involved.distance.recurring = get_involved_recipients(distance %>% filter(recurring == TRUE))
 involved.random.recurring = get_involved_recipients(random %>% filter(recurring == TRUE))
 involved.top.1.recurring = get_involved_recipients(top.1 %>% filter(recurring == TRUE))
 involved.top.10.recurring = get_involved_recipients(top.10 %>% filter(recurring == TRUE))
 involved.human.recurring = get_involved_recipients(human %>% filter(recurring == TRUE), h = TRUE)
-density.involved.recurring = data.frame("number_of_rescues" = c(1:506), "TopA" = involved.top.1.recurring, "TenA" = involved.top.10.recurring, "DA" = involved.distance.recurring, "RA" = involved.random.recurring, "HA" = involved.human.recurring)
+density.involved.recurring = data.frame("number_of_rescues" = c(1:505), "TopA" = involved.top.1.recurring, "TenA" = involved.top.10.recurring, "DA" = involved.distance.recurring, "RA" = involved.random.recurring, "HA" = involved.human.recurring)
 
 involved.distance.ad_hoc = get_involved_recipients(distance %>% filter(recurring == FALSE))
 involved.random.ad_hoc = get_involved_recipients(random %>% filter(recurring == FALSE))
 involved.top.1.ad_hoc = get_involved_recipients(top.1 %>% filter(recurring == FALSE))
 involved.top.10.ad_hoc = get_involved_recipients(top.10 %>% filter(recurring == FALSE))
 involved.human.ad_hoc = get_involved_recipients(human %>% filter(recurring == FALSE), h = TRUE)
-density.involved.ad_hoc = data.frame("number_of_rescues" = c(1:1329), "TopA" = involved.top.1.ad_hoc, "TenA" = involved.top.10.ad_hoc, "DA" = involved.distance.ad_hoc, "RA" = involved.random.ad_hoc, "HA" = involved.human.ad_hoc)
+density.involved.ad_hoc = data.frame("number_of_rescues" = c(1:1255), "TopA" = involved.top.1.ad_hoc, "TenA" = involved.top.10.ad_hoc, "DA" = involved.distance.ad_hoc, "RA" = involved.random.ad_hoc, "HA" = involved.human.ad_hoc)
 
 # We are not showing TenA in all graphs for the sake of simplicity
 # But we do keep all dataframes here in the server
@@ -533,7 +538,7 @@ shinyServer(function(input, output) {
       geom_line(aes(y = TopA, color = "Algorithm")) + 
       geom_line(aes(y = DA, color = "Distance-based"), linetype = "dotted") + 
       geom_line(aes(y = RA, color = "Random"), linetype = "dashed") + 
-      geom_line(aes(x = tar$id, y = tar$tar), color = "grey", linetype = "dashed") + 
+      geom_line(data = tar, aes(x = id, y = tar), color = "grey", linetype = "dashed") + 
       labs(title = "Rescues vs. Involved Recipients", x = "Number of Rescues", y = "Number of Recipients with At Least 1 Donations") +
       scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4"))
   if (input$recurring_2) {
