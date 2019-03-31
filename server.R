@@ -23,16 +23,10 @@ library(DT)
 library(data.table)
 
 # Define the theme
-FR_theme <-  theme(panel.background = element_rect(fill = "white", 
-                                                           color = "black"), 
-                           plot.title = element_text(size = 14, 
-                                                     color = "black"), 
-                           axis.text.x = element_text(size = 8, 
-                                                      color = "darkblue", 
-                                                      angle = 45, 
-                                                      hjust = 1),
-                           axis.text.y = element_text(size = 8, 
-                                                      color = "darkblue"))
+FR_theme <-  theme(panel.background = element_rect(fill = "white"),
+                   panel.grid.major.y = element_line(colour = "grey"),
+                   axis.line = element_line(size = 1.5),
+                   axis.text = element_text(size = 12))
 
 # Load datasets
 top.1 = data.frame(read_csv("top1.csv"))
@@ -409,29 +403,32 @@ shinyServer(function(input, output) {
    
   output$donation_per_recipient <- renderPlotly({
     p = ggplot(per_recipient_adjusted, aes(num_of_donations)) + 
-      geom_line(aes(y = HA_freq, colour = "Human dispatcher")) + 
+      geom_line(aes(y = HA_freq, colour = "Human dispatcher"), linetype = "dotted") + 
       geom_line(aes(y = TopA_freq, colour = "Algorithm")) +
-      geom_line(aes(y = DA_freq, colour = "Distance-based"), linetype = "dotted") + 
+      geom_line(aes(y = DA_freq, colour = "Distance-based"), linetype = "dotdash") + 
       geom_line(aes(y = RA_freq, colour = "Random"), linetype = "dashed") + 
       labs(title = "Frequency of Donations/Recipient", x = "Number of Donations/Recipient", y = "Frequency of Donations") +
-      scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4"))
+      scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4")) +
+      FR_theme
     if (input$recurring) {
       p = ggplot(recur_per_recipient_adjusted, aes(num_of_donations)) + 
-        geom_line(aes(y = HA_freq, colour = "Human dispatcher")) + 
+        geom_line(aes(y = HA_freq, colour = "Human dispatcher"), linetype = "dotted") + 
         geom_line(aes(y = TopA_freq, colour = "Algorithm")) +
-        geom_line(aes(y = DA_freq, colour = "Distance-based"), linetype = "dotted") + 
+        geom_line(aes(y = DA_freq, colour = "Distance-based"), linetype = "dotdash") + 
         geom_line(aes(y = RA_freq, colour = "Random"), linetype = "dashed") +   
         labs(title = "Frequency of Donations/Recipient (Weekly)", x = "Number of Donations/Recipient", y = "Frequency of Donations") +
-        scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4"))
+        scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4")) +
+        FR_theme
     }
     if (input$ad_hoc) {
       p = ggplot(ad_hoc_per_recipient_adjusted, aes(num_of_donations)) + 
-        geom_line(aes(y = HA_freq, colour = "Human dispatcher")) + 
+        geom_line(aes(y = HA_freq, colour = "Human dispatcher"), linetype = "dotted") + 
         geom_line(aes(y = TopA_freq, colour = "Algorithm")) +
-        geom_line(aes(y = DA_freq, colour = "Distance-based"), linetype = "dotted") + 
+        geom_line(aes(y = DA_freq, colour = "Distance-based"), linetype = "dotdash") + 
         geom_line(aes(y = RA_freq, colour = "Random"), linetype = "dashed") +   
         labs(title = "Frequency of Donations/Recipient (One-time)", x = "Number of Donations/Recipient", y = "Frequency of Donations") +
-        scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4"))
+        scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4")) +
+        FR_theme
     }
     
     p = style(ggplotly(p),visible="legendonly", traces = c(3, 4))
@@ -454,24 +451,26 @@ shinyServer(function(input, output) {
   
   output$rescues_vs_distance <- renderPlotly({
     p = ggplot(rescue.vs.distance, aes(num_rescues)) + 
-      geom_line(aes(y = human, colour = "Human dispatcher")) + 
+      geom_line(aes(y = human, colour = "Human dispatcher"), linetype = "dotted") + 
       geom_line(aes(y = top1, colour = "Algorithm")) + 
-      geom_line(aes(y = distance, colour = "Distance-based"), linetype = "dotted") + 
+      geom_line(aes(y = distance, colour = "Distance-based"), linetype = "dotdash") + 
       geom_line(aes(y = random, colour = "Random"), linetype = "dashed") + 
       labs(x = "Number of Donations", y = "Total  Distance(miles)", title = "Rescues vs. Distance") +
-      scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4"))
+      scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4")) +
+      FR_theme
     p = style(ggplotly(p),visible="legendonly", traces = c(3, 4))
     return(p)
   })
   
   output$distribution_of_distance <- renderPlotly({
     p = ggplot(density.distance) + 
-      geom_density(aes(x = HA, colour = "Human dispatcher")) + 
+      geom_density(aes(x = HA, colour = "Human dispatcher"), linetype = "dotted") + 
       geom_density(aes(x = TopA, colour = "Algorithm")) + 
-      geom_density(aes(x = DA, colour = "Distance-based"), linetype = "dotted") + 
+      geom_density(aes(x = DA, colour = "Distance-based"), linetype = "dotdash") + 
       geom_density(aes(x = RA, colour = "Random"), linetype = "dashed") + 
       labs(title = "Distribution Plot of Distance", x = NULL, y = NULL) + 
-      scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4"))
+      scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4")) +
+      FR_theme
     p = style(ggplotly(p),visible="legendonly", traces = c(3, 4))
     return(p)
   })
@@ -483,12 +482,13 @@ shinyServer(function(input, output) {
   
   output$distribution_of_poverty_rate <- renderPlotly({
     p = ggplot() + 
-      geom_density(data = density.poverty.human, aes(x = HA, colour = "Human dispatcher")) + 
+      geom_density(data = density.poverty.human, aes(x = HA, colour = "Human dispatcher"), linetype = "dotted") + 
       geom_density(data = density.poverty, aes(x = TopA, colour = "Algorithm")) + 
-      geom_density(data = density.poverty, aes(x = DA, colour = "Distance-based"), linetype = "dotted") + 
+      geom_density(data = density.poverty, aes(x = DA, colour = "Distance-based"), linetype = "dotdash") + 
       geom_density(data = density.poverty, aes(x = RA, colour = "Random"), linetype = "dashed") + 
       labs(title = "Distribution of Poverty Rate", x = NULL, y = NULL) + 
-      scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4"))
+      scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4")) +
+      FR_theme
     p = style(ggplotly(p),visible="legendonly", traces = c(3, 4))
     return(p)
   })
@@ -500,12 +500,13 @@ shinyServer(function(input, output) {
   
   output$distribution_of_median_income <- renderPlotly({
     p = ggplot() + 
-      geom_density(data = density.income.human, aes(x = HA, colour = "Human dispatcher")) + 
+      geom_density(data = density.income.human, aes(x = HA, colour = "Human dispatcher"), linetype = "dotted") + 
       geom_density(data = density.income, aes(x = TopA, colour = "Algorithm")) + 
-      geom_density(data = density.income, aes(x = DA, colour = "Distance-based"), linetype = "dotted") + 
+      geom_density(data = density.income, aes(x = DA, colour = "Distance-based"), linetype = "dotdash") + 
       geom_density(data = density.income, aes(x = RA, colour = "Random"), linetype = "dashed") + 
       labs(title = "Distribution of Median Income", x = NULL, y = NULL) + 
-      scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4"))
+      scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4")) +
+      FR_theme
     p = style(ggplotly(p),visible="legendonly", traces = c(3, 4))
     return(p)
   })
@@ -517,12 +518,13 @@ shinyServer(function(input, output) {
   
   output$distribution_of_food_access <- renderPlotly({
     p = ggplot() + 
-      geom_density(data = density.food.human, aes(x = HA, colour = "Human dispatcher")) + 
+      geom_density(data = density.food.human, aes(x = HA, colour = "Human dispatcher"), linetype = "dotted") + 
       geom_density(data = density.food, aes(x = TopA, colour = "Algorithm")) + 
-      geom_density(data = density.food, aes(x = DA, colour = "Distance-based"), linetype = "dotted") + 
+      geom_density(data = density.food, aes(x = DA, colour = "Distance-based"), linetype = "dotdash") + 
       geom_density(data = density.food, aes(x = RA, colour = "Random"), linetype = "dashed") + 
       labs(title = "Distribution of Food Access", x = NULL, y = NULL) + 
-      scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4"))
+      scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4")) +
+      FR_theme
     p = style(ggplotly(p),visible="legendonly", traces = c(3, 4))
     return(p)
   })
@@ -534,32 +536,35 @@ shinyServer(function(input, output) {
   
   output$involved_recipients <- renderPlotly({
     p = ggplot(density.involved, aes(x = number_of_rescues)) + 
-      geom_line(aes(y = HA, color = "Human dispatcher")) + 
+      geom_line(aes(y = HA, color = "Human dispatcher"), linetype = "dotted") + 
       geom_line(aes(y = TopA, color = "Algorithm")) + 
-      geom_line(aes(y = DA, color = "Distance-based"), linetype = "dotted") + 
+      geom_line(aes(y = DA, color = "Distance-based"), linetype = "dotdash") + 
       geom_line(aes(y = RA, color = "Random"), linetype = "dashed") + 
       geom_line(data = tar, aes(x = id, y = tar), color = "grey", linetype = "dashed") + 
       labs(title = "Rescues vs. Involved Recipients", x = "Number of Rescues", y = "Number of Recipients with At Least 1 Donations") +
-      scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4"))
+      scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4")) +
+      FR_theme
   if (input$recurring_2) {
     p = ggplot(density.involved.recurring, aes(x = number_of_rescues)) + 
-      geom_line(aes(y = HA, color = "Human dispatcher")) + 
+      geom_line(aes(y = HA, color = "Human dispatcher"), linetype = "dotted") + 
       geom_line(aes(y = TopA, color = "Algorithm")) + 
-      geom_line(aes(y = DA, color = "Distance-based"), linetype = "dotted") + 
+      geom_line(aes(y = DA, color = "Distance-based"), linetype = "dotdash") + 
       geom_line(aes(y = RA, color = "Random"), linetype = "dashed") + 
       geom_hline(aes(yintercept = length(unique(partners$ID))), color = "grey", linetype = "dashed") +
       labs(title = "Rescues vs. Involved Recipients (Weekly)", x = "Number of Rescues", y = "Number of Recipients with At Least 1 Donations") +
-      scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4"))
+      scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4")) +
+      FR_theme
   }
   if (input$ad_hoc_2) {
     p = ggplot(density.involved.ad_hoc, aes(x = number_of_rescues)) + 
-      geom_line(aes(y = HA, color = "Human dispatcher")) + 
+      geom_line(aes(y = HA, color = "Human dispatcher"), linetype = "dotted") + 
       geom_line(aes(y = TopA, color = "Algorithm")) + 
-      geom_line(aes(y = DA, color = "Distance-based"), linetype = "dotted") + 
+      geom_line(aes(y = DA, color = "Distance-based"), linetype = "dotdash") + 
       geom_line(aes(y = RA, color = "Random"), linetype = "dashed") + 
       geom_hline(aes(yintercept = length(unique(partners$ID))), color = "grey", linetype = "dashed") +
       labs(title = "Rescues vs. Involved Recipients (One-time)", x = "Number of Rescues", y = "Number of Recipients with At Least 1 Donations") +
-      scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4"))
+      scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4")) +
+      FR_theme
   }
   p = style(ggplotly(p),visible="legendonly", traces = c(3, 4))
   return(p)

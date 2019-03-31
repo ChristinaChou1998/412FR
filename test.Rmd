@@ -431,6 +431,7 @@ top.1 %>% slice(which(!top.1$rescue_id %in% invalid_donations$rescue_id))
 random %>% slice(which(!random$rescue_id %in% invalid_donations$rescue_id))
 distance %>% slice(which(!rescue_id %in% invalid_donations$rescue_id))
 top.10 %>% slice(which(!top.10$rescue_id %in% invalid_donations$rescue_id))
+density.poverty
 ```
 
 ## R Markdown
