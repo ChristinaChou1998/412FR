@@ -93,6 +93,30 @@ top10_per_recipient = freq_donations_per_recipient(top10_marginal)
 top10_per_recipient$count_of_donations[1] = never.top.10
 ```
 ```{r}
+partners = partners %>% slice(which(is.na(partners$status) == T | partners$status == "invalid hour"))
+#human_gini = human_marginal[order(human_marginal$freq, decreasing = FALSE),]
+never_human_ids = human %>% slice(which(unique(partners$ID) %in% old_recipient_location_id == F)) %>% select(old_recipient_location_id)
+never_human = data.frame(old_recipient_location_id = never_human_ids, freq = rep(0, nrow(never_human_ids)))
+human_marginal = rbind(human_marginal, never_human)
+#human_marginal
+get_gini = function(marginal){
+  marginal = marginal[order(marginal$freq, decreasing = FALSE),]
+  total = nrow(marginal)
+  total_donations = sum(marginal$freq)
+  gini_x = rep(NA, total)
+  gini_y = rep(NA, total)
+  donations = 0
+  for (ii in 1:total){
+    donations = donations + marginal$freq[ii]
+    gini_x[ii] = ii/total
+    gini_y[ii] = donations/total_donations
+  }
+  return(data.frame(gini_x, gini_y))
+}
+human_gini = get_gini(human_marginal)
+ggplot() + geom_line(data = human_gini, aes(x = gini_x, y = gini_y)) + labs(x = "Fraction of Recipients", y = "Fraction of Total Donations", title = "Gini Coefficient Plot")
+```
+```{r}
 # creating a dataframe to hold all information
 
 per_recipient = data_frame("num_of_donations" = c(0:60), "DA_freq" = distance_per_recipient$count_of_donations, "HA_freq" = human_per_recipient$count_of_donations, "RA_freq" = random_per_recipient$count_of_donations, "TenA_freq" = top10_per_recipient$count_of_donations, "TopA_freq" = top1_per_recipient$count_of_donations)

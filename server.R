@@ -212,6 +212,22 @@ get_involved_recipients = function(df, h = FALSE) {
   return(number_of_recipients)
 }
 
+# for Gini coefficient plot
+get_gini = function(marginal){
+  marginal = marginal[order(marginal$freq, decreasing = FALSE),]
+  total = nrow(marginal)
+  total_donations = sum(marginal$freq)
+  gini_x = rep(NA, total)
+  gini_y = rep(NA, total)
+  donations = 0
+  for (ii in 1:total){
+    donations = donations + marginal$freq[ii]
+    gini_x[ii] = ii/total
+    gini_y[ii] = donations/total_donations
+  }
+  return(data.frame(gini_x, gini_y))
+}
+
 # per_recipient_plot
 never.human = length(which(unique(partners$ID) %in% human$old_recipient_location_id == F))
 never.top.1 = length(which(unique(partners$ID) %in% top.1$recipient_location_id == F))
@@ -416,6 +432,26 @@ involved.top.10.ad_hoc = get_involved_recipients(top.10 %>% filter(recurring == 
 involved.human.ad_hoc = get_involved_recipients(human %>% filter(recurring == FALSE), h = TRUE)
 density.involved.ad_hoc = data.frame("number_of_rescues" = c(1:1255), "TopA" = involved.top.1.ad_hoc, "TenA" = involved.top.10.ad_hoc, "DA" = involved.distance.ad_hoc, "RA" = involved.random.ad_hoc, "HA" = involved.human.ad_hoc)
 
+# Gini coefficient plot
+gini.never.human.ids = human %>% slice(which(unique(partners$ID) %in% old_recipient_location_id == F)) %>% select(old_recipient_location_id)
+gini.human = data.frame(old_recipient_location_id = gini.never.human.ids, freq = rep(0, nrow(gini.never.human.ids)))
+gini.human = rbind(human_marginal, gini.human)
+gini.human = get_gini(gini.human)
+
+gini.never.algo.ids = top.1 %>% slice(which(unique(partners$ID) %in% recipient_location_id == F)) %>% select(recipient_location_id)
+gini.algo = data.frame(recipient_location_id = gini.never.algo.ids, freq = rep(0, nrow(gini.never.algo.ids)))
+gini.algo = rbind(top1_marginal, gini.algo)
+gini.algo = get_gini(gini.algo)
+
+gini.never.distance.ids = distance %>% slice(which(unique(partners$ID) %in% recipient_location_id == F)) %>% select(recipient_location_id)
+gini.distance = data.frame(recipient_location_id = gini.never.distance.ids, freq = rep(0, nrow(gini.never.distance.ids)))
+gini.distance = rbind(distance_marginal, gini.distance)
+gini.distance = get_gini(gini.distance)
+
+gini.never.random.ids = distance %>% slice(which(unique(partners$ID) %in% recipient_location_id == F)) %>% select(recipient_location_id)
+gini.random = data.frame(recipient_location_id = gini.never.random.ids, freq = rep(0, nrow(gini.never.random.ids)))
+gini.random = rbind(random_marginal, gini.random)
+gini.random = get_gini(gini.random)
 # We are not showing TenA in all graphs for the sake of simplicity
 # But we do keep all dataframes here in the server
 
@@ -617,5 +653,15 @@ shinyServer(function(input, output) {
       FR_theme
     return(ggplotly(p))
   })
-  
-  })
+  output$gini <- renderPlotly({
+    p = ggplot()+
+      geom_line(data = gini.human, aes(x = gini_x, y = gini_y, color = "Human dispatcher"), linetype = "dotted") +
+      geom_line(data = gini.algo, aes(x = gini_x, y = gini_y, color = "Algorithm"), linetype = "solid") +
+      geom_line(data = gini.distance, aes(x = gini_x, y = gini_y, color = "Distance-based"), linetype = "dotdash") +
+      geom_line(data = gini.random, aes(x = gini_x, y = gini_y, color = "Random"), linetype = "dashed") +
+      labs(x = "Fraction of Recipients", y = "Fraction of Total Donations", title = "Gini Coefficient Plot") +
+      scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm", "Random", "Distance-based"), values = c("Human dispatcher" = "red", "Algorithm" = "blue", "Random" = "grey45", "Distance-based" = "burlywood4")) +
+      FR_theme
+    p = style(ggplotly(p),visible="legendonly", traces = c(3, 4))
+    return(ggplotly(p))
+  })})
