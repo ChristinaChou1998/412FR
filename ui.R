@@ -31,7 +31,10 @@ shinyUI(dashboardPage(skin = "purple",
                           menuItem("Distribution of Poverty Rate", tabName = "part4", icon = icon("part4")),
                           menuItem("Distribution of Median Income", tabName = "part5", icon = icon("part5")),
                           menuItem("Distribution of Food Access", tabName = "part6", icon = icon("part6")),
-                          menuItem("Rescues vs. Involved Recipients", tabName = "part7", icon = icon("part7"))
+                          menuItem("Rescues vs. Involved Recipients", tabName = "part7", icon = icon("part7")),
+                          menuItem("CDF for Poverty Rate", tabName = "part8", icon = icon("part8")),
+                          menuItem("CDF for Median Income", tabName = "part9", icon = icon("part9")),
+                          menuItem("CDF for Food Access", tabName = "part10", icon = icon("part10"))
                         )
                       ),
                       dashboardBody(
@@ -116,7 +119,13 @@ shinyUI(dashboardPage(skin = "purple",
                                   checkboxInput(inputId = "ad_hoc_2",
                                                 label = "Show only one-time",
                                                 value = FALSE)
-                          )
+                          ),
+                          tabItem(tabName = "part8",
+                                  plotlyOutput(outputId = "cdf_poverty", height = "500px")),
+                          tabItem(tabName = "part9",
+                                  plotlyOutput(outputId = "cdf_income", height = "500px")),
+                          tabItem(tabName = "part10",
+                                  plotlyOutput(outputId = "cdf_food", height = "500px"))
                         )
                       )
 )

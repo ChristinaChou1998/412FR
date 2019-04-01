@@ -62,6 +62,27 @@ top.10 = top.10 %>% slice(which(!rescue_id %in% invalid_donations$rescue_id))
 
 partners = partners %>% slice(which(is.na(partners$status) == T | partners$status == "invalid hour"))
 
+# data.frames for CDFs
+human.cdf = human %>% left_join(., census, by = c("old_recipient_location_id" = "recipient_location_id")) 
+top.1.cdf = top.1 %>% left_join(., census, by = c("recipient_location_id" = "recipient_location_id")) 
+
+type_human = rep("Human dispatcher", 1760)
+type_algo = rep("Algorithm", 1760)
+type = c(type_human, type_algo)
+poverty = c(human.cdf$zip_poverty_rate, top.1.cdf$zip_poverty_rate)
+income = c(human.cdf$zip_median_income, top.1.cdf$zip_median_income)
+food = c(human.cdf$zip_food_access, top.1.cdf$zip_food_access)
+
+cdf_poverty = data.frame(poverty_rate = poverty, type = type)
+cdf_poverty = cdf_poverty[order(cdf_poverty$poverty_rate), ]
+cdf_poverty$type = factor(cdf_poverty$type, levels = c("Human dispatcher", "Algorithm"))
+cdf_income = data.frame(median_income = income, type = type)
+cdf_income = cdf_income[order(cdf_income$median_income), ]
+cdf_income$type = factor(cdf_income$type, levels = c("Human dispatcher", "Algorithm"))
+cdf_food = data.frame(food_access = food, type = type)
+cdf_food = cdf_food[order(cdf_food$food_access), ]
+cdf_food$type = factor(cdf_food$type, levels = c("Human dispatcher", "Algorithm"))
+
 # Define functions
 
 # for per_recipient plot
@@ -568,4 +589,33 @@ shinyServer(function(input, output) {
   }
   p = style(ggplotly(p),visible="legendonly", traces = c(3, 4))
   return(p)
-})})
+})
+  output$cdf_poverty <- renderPlotly({
+    p = ggplot(data = cdf_poverty) +
+      stat_ecdf(aes(x = poverty_rate, color = type, linetype = type), geom = "step") +
+      labs(title = "CDF of Poverty Rate", x = "Poverty Rate", y = "Density") +
+      scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm"), values = c("Human dispatcher" = "red", "Algorithm" = "blue")) +
+      scale_linetype_manual(name = "", breaks = c("Human dispatcher", "Algorithm"), values = c("Human dispatcher" = "dotted", "Algorithm" = "solid")) +
+      FR_theme 
+    return(ggplotly(p))
+  })
+  output$cdf_income <- renderPlotly({
+    p = ggplot(data = cdf_income) +
+      stat_ecdf(aes(x = median_income, color = type, linetype = type), geom = "step") +
+      labs(title = "CDF of Median Income", x = "Median Income", y = "Density") +
+      scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm"), values = c("Human dispatcher" = "red", "Algorithm" = "blue")) +
+      scale_linetype_manual(name = "", breaks = c("Human dispatcher", "Algorithm"), values = c("Human dispatcher" = "dotted", "Algorithm" = "solid")) +
+      FR_theme
+    return(ggplotly(p))
+  })
+  output$cdf_food <- renderPlotly({
+    p = ggplot(data = cdf_food) +
+      stat_ecdf(aes(x = food_access, color = type, linetype = type), geom = "step") +
+      labs(title = "CDF of Food Access", x = "Food Access", y = "Density") +
+      scale_color_manual(name = "", breaks = c("Human dispatcher", "Algorithm"), values = c("Human dispatcher" = "red", "Algorithm" = "blue")) +
+      scale_linetype_manual(name = "", breaks = c("Human dispatcher", "Algorithm"), values = c("Human dispatcher" = "dotted", "Algorithm" = "solid")) +
+      FR_theme
+    return(ggplotly(p))
+  })
+  
+  })

@@ -426,12 +426,33 @@ nrow(human %>% slice(which(human$old_recipient_location_id %in% incomplete$ID)))
 nrow(human %>% slice(which(human$old_recipient_location_id %in% inactive$ID)))
 
 invalid_donations = human %>% slice(which(human$old_recipient_location_id %in% excluded$ID | human$old_recipient_location_id %in% incomplete$ID | human$old_recipient_location_id %in% inactive$ID)) 
-human %>% slice(which(!human$rescue_id %in% invalid_donations$rescue_id))
-top.1 %>% slice(which(!top.1$rescue_id %in% invalid_donations$rescue_id))
-random %>% slice(which(!random$rescue_id %in% invalid_donations$rescue_id))
-distance %>% slice(which(!rescue_id %in% invalid_donations$rescue_id))
-top.10 %>% slice(which(!top.10$rescue_id %in% invalid_donations$rescue_id))
-density.poverty
+human = human %>% slice(which(!rescue_id %in% invalid_donations$rescue_id))
+top.1 = top.1 %>% slice(which(!rescue_id %in% invalid_donations$rescue_id))
+random = random %>% slice(which(!rescue_id %in% invalid_donations$rescue_id))
+distance = distance %>% slice(which(!rescue_id %in% invalid_donations$rescue_id))
+top.10 = top.10 %>% slice(which(!rescue_id %in% invalid_donations$rescue_id))
+```
+
+```{r}
+human.cdf = human %>% left_join(., census, by = c("old_recipient_location_id" = "recipient_location_id")) 
+top.1.cdf = top.1 %>% left_join(., census, by = c("recipient_location_id" = "recipient_location_id")) 
+type_human = rep("human", 1760)
+type_algo = rep("algorithm", 1760)
+#top.1.cdf$zip_poverty_rate[1]
+poverty = c(human.cdf$zip_poverty_rate, top.1.cdf$zip_poverty_rate)
+type = c(type_human, type_algo)
+#nrow(human.cdf)
+cdf_poverty = data.frame(poverty_rate = poverty, type = type)
+cdf_poverty = cdf_poverty[order(cdf_poverty$poverty_rate), ]
+```
+```{r}
+ggplot(data = cdf_poverty) +
+  stat_ecdf(aes(x = poverty_rate, color = type), geom = "step") +
+  labs(title = "CDF of Poverty Rate",
+           x = "Poverty Rate",
+           y = "Density") +
+  scale_color_manual(name = "", values = c("blue", "red"))
+
 ```
 
 ## R Markdown
